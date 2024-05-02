@@ -1,0 +1,16 @@
+creation_rules:
+- path_regex: .*\/*test\/(.*\/)*secrets\/(.*\.y[a]?ml)$
+  encrypted_regex: ^(data|stringData|identity|identity.pub|known_hosts|\.dockerconfigjson|literals)$
+  age: age1vzzjtxm5vx6zt5zgxa5g0kvj0h84l88n2rwzkyha49elwdkudczse8mu66
+- path_regex: .*\/*test\/(.*\/)*tls-secrets\/(.*\.(pem|key|crt|cer))$
+  age: age1vzzjtxm5vx6zt5zgxa5g0kvj0h84l88n2rwzkyha49elwdkudczse8mu66,age19c7svc69r96apdtph2x3axmkqn7lypwmqsprnpjf06zjjq2r4epszxlnls
+- path_regex: .*\/*ref\/(.*\/)*secrets\/(.*\.y[a]?ml)$
+  encrypted_regex: ^(data|stringData|identity|identity.pub|known_hosts|\.dockerconfigjson|literals)$
+  age: age193kcxe2jeallfczekf6x2kq5cp603ynuruke4klq0e8vltcdp5fqs2c0rz
+- path_regex: .*\/*ref\/(.*\/)*tls-secrets\/(.*\.(pem|key|crt|cer))$
+  age: age193kcxe2jeallfczekf6x2kq5cp603ynuruke4klq0e8vltcdp5fqs2c0rz
+- path_regex: .*\/*prod\/(.*\/)*secrets\/(.*\.y[a]?ml)$
+  encrypted_regex: ^(data|stringData|identity|identity.pub|known_hosts|\.dockerconfigjson|literals)$
+  age: age1gwwfs5m35aqnrdxwuk3nj7h6539ewlq3kkvu6jlc6drmevueeqdq0mwcg4
+- path_regex: .*\/*prod\/(.*\/)*tls-secrets\/(.*\.(pem|key|crt|cer))$
+  age: age1fn5428e7c3tn36hpys2trfc3r8wjrfpzwwggqy636ddza7w4430sv4mrpu,age1gwwfs5m35aqnrdxwuk3nj7h6539ewlq3kkvu6jlc6drmevueeqdq0mwcg4
