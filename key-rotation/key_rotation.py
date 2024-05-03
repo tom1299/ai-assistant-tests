@@ -70,12 +70,12 @@ def main():
 
     matched_files = match_files_with_keys(args.sops_config, args.directory)
 
-    for key, files in matched_files.items():
-        print(f"Public Key: {key}")
-        print("List of files:")
+    sops_dir = os.path.dirname(os.path.abspath(args.sops_config))
+
+    for files in matched_files.values():
         for filepath in files:
-            print(filepath)
-        print("\n")
+            rel_path = os.path.relpath(filepath, start=sops_dir)
+            print(rel_path)
 
 if __name__ == "__main__":
     main()
