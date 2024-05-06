@@ -2,6 +2,8 @@ import parse
 from behave import given, when, then, register_type
 import subprocess
 import os
+import shutil
+import tempfile
 import yaml
 
 
@@ -14,17 +16,18 @@ register_type(NullableString=parse_nullable_string)
 
 @given('I have the sops configuration file "{sops_file}"')
 def step_given_sops_config_file(context, sops_file):
-    # Get the directory of the current script
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Join the current directory with the relative path provided in the feature file
-    context.sops_file = os.path.join(current_dir, sops_file)
+    context.sops_file = os.path.join(context.directory, sops_file)
 
-@given('I the file and folder structure "{directory}"')
+@given('I have the file and folder structure "{directory}"')
 def step_given_directory(context, directory):
     # Get the directory of the current script
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # Join the current directory with the relative path provided in the feature file
-    context.directory = os.path.join(current_dir, directory)
+    original_directory = os.path.join(current_dir, directory)
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    # Create a copy of the directory in the temporary directory
+    context.directory = shutil.copytree(original_directory, os.path.join(temp_dir, 'copy'))
 
 @when('I call the python script "{script}" with the following arguments')
 def step_when_call_python_script(context, script):

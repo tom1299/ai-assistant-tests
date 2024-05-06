@@ -1,8 +1,10 @@
 Feature: Sops age key rotation
 
+  Background:
+    Given I have the file and folder structure "../../flux"
+    And I have the sops configuration file ".sops.yaml"
+
   Scenario Outline: Get list of files that need to be encrypted
-    Given I have the sops configuration file "../../flux/.sops.yaml"
-    And I the file and folder structure "../../flux"
     When I call the python script "../../key_rotation.py" with the following arguments
     | arg_name | arg_value |
     | --age-key | <public_key> |
@@ -19,7 +21,6 @@ Feature: Sops age key rotation
       | age1gwwfs5m35aqnrdxwuk3nj7h6539ewlq3kkvu6jlc6drmevueeqdq0mwcg4 | | |
 
 Scenario Outline: Add a new age public key for all entries that contain a given old age public key
-  Given I have the sops configuration file "../../flux/.sops.yaml"
   When I call the python script "../../key_rotation.py" with the following arguments
   | arg_name | arg_value |
   | --old-age-key | <old_public_key> |
