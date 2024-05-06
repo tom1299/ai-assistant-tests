@@ -2,6 +2,7 @@ import parse
 from behave import given, when, then, register_type
 import subprocess
 import os
+import yaml
 
 
 @parse.with_pattern(r'.*')
@@ -64,3 +65,18 @@ def step_then_output_not_contains_list(context, not_list=None):
     files = not_list.split(', ')
     for file in files:
         assert file not in context.output
+
+@then('the entries in the sops configuration file containing the old public key {old_public_key} should also contain the new public key {new_public_key}')
+def step_then_sops_config_contains_new_key(context, old_public_key, new_public_key):
+    # Open the sops configuration file and load its content
+    with open(context.sops_file, 'r', encoding='utf-8') as file:
+        sops_config = yaml.safe_load(file)
+
+    # Get the creation rules from the sops configuration
+    creation_rules = sops_config.get('creation_rules', [])
+
+    # For each rule, check if the old public key is in the 'age' field
+    for rule in creation_rules:
+        if old_public_key in rule['age']:
+            # If the old public key is in the 'age' field, assert that the new public key is also there
+            assert new_public_key in rule['age'], f"New public key {new_public_key} not found in rule: {rule}"
