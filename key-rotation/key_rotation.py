@@ -66,12 +66,9 @@ def main():
     if args.list_files:
         matched_files = match_files_with_keys(args.sops_config, args.folder, args.age_key)
 
-        sops_dir = os.path.dirname(os.path.abspath(args.sops_config))
-
         for files in matched_files.values():
             for filepath in files:
-                rel_path = os.path.relpath(filepath, start=sops_dir)
-                print(rel_path)
+                print(filepath)
 
     if args.old_age_key and args.new_age_key and args.add_new_key:
         update_sops_config(args.sops_config, args.old_age_key, args.new_age_key)
