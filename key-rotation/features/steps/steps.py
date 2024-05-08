@@ -39,25 +39,36 @@ def step_impl(context, file_or_script, file, name):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     absolute_path = os.path.join(current_dir, file)
     add_named_attribute_to_context(context, name, absolute_path)
+    # Extract the folder from the file path and add it to the environment variables PATH
+    folder = os.path.dirname(absolute_path)
+    os.environ['PATH'] = f"{folder}:{os.environ['PATH']}"
 
 
-@when(u'I call the script "(?P<script>.*)" with the following arguments using the folder "(?P<folder>.*)" as the current directory')
-def step_when_call_python_script(context, script, folder):
+
+
+@when(u'I call the (python script|script) "(?P<script>.*)" with the following arguments using the folder "(?P<folder>.*)" as the current directory')
+def step_when_call_python_script(context, script_or_python_script, script, folder):
     script_path = context.named_attributes[script]
 
-    # Construct the command
-    command = f"python {script_path}"
+    if script_or_python_script == 'python script':
+        command = f"python {script_path}"
+    else:
+        command = f"{script_path}"
+
     for row in context.table:
         arg_name = row['arg_name']
         arg_value = row['arg_value']
         if arg_value in context.named_attributes:
             arg_value = context.named_attributes[arg_value]
-        if arg_value:
+        if arg_value and arg_name:
             command += f" {arg_name} {arg_value}"
+        if arg_value and not arg_name:
+            command += f" {arg_value}"
         else:
             command += f" {arg_name}"
 
-    # # context.output = subprocess.check_output(command, shell=True).decode()
+    # Alter the command to pass the path environment variable
+    command = f"PATH={os.environ['PATH']} {command}"
     context.output = subprocess.check_output(command, cwd=context.named_attributes[folder], shell=True).decode()
 
 
@@ -96,3 +107,16 @@ def step_then_sops_config_contains_new_key(context, file, old_public_key, new_pu
         if old_public_key in rule['age']:
             # If the old public key is in the 'age' field, assert that the new public key is also there
             assert new_public_key in rule['age'], f"New public key {new_public_key} not found in rule: {rule}"
+
+@then(u'the output should contain "(?P<message>.*)" for each file in this list of files from the folder "(?P<folder>.*)"')
+def step_then_output_contains_decrypted(context, message, folder):
+    lines = context.output.strip().split('\n')
+    assert len(lines) == len(context.table.rows), f"Number of lines in output is different from number of files"
+    for row in context.table:
+        file = os.path.join(context.named_attributes[folder], row['file'])
+        found = False
+        for line in lines:
+            if message in line and file in line:
+                found = True
+                break
+        assert found, f"Message {message} not found in file {file} output"

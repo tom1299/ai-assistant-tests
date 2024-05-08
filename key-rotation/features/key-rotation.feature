@@ -4,6 +4,7 @@ Feature: Sops age key rotation
     Given I create a copy of the folder "../../flux" named "flux"
     And I have the script "../../key_rotation.py" as "key_rotation.py"
     And I have the file "../../flux/.sops.yaml" as ".sops.yaml"
+    And I have the script "../../decrypt_files.sh" as "decrypt_files.sh"
 
   Scenario Outline: Get list of files that need to be encrypted
     When I call the script "key_rotation.py" with the following arguments using the folder "flux" as the current directory
@@ -34,3 +35,15 @@ Feature: Sops age key rotation
       | old_public_key | new_public_key |
       | age1vzzjtxm5vx6zt5zgxa5g0kvj0h84l88n2rwzkyha49elwdkudczse8mu66 | age1m4rqtcc8w2c80l485tnnlvhmg05ynaad2y2hx5e3n4wu9gxxxqgsyuecwv |
       | age19c7svc69r96apdtph2x3axmkqn7lypwmqsprnpjf06zjjq2r4epszxlnls | age1afuvjwph326mx2nsjldmj9l0lwr9hz9at62ye82rre5fykvy455s6pdvl3 |
+
+Scenario: Decrypt files using the bash script
+  When I call the script "decrypt_files.sh" with the following arguments using the folder "flux" as the current directory
+  | arg_name | arg_value |
+  | | flux |
+  | | .sops.yaml |
+  | | age1vzzjtxm5vx6zt5zgxa5g0kvj0h84l88n2rwzkyha49elwdkudczse8mu66 |
+  Then the output should contain "is not encrypted" for each file in this list of files from the folder "flux"
+  | file |
+  | test/secrets/database/password.yaml |
+  | test/tls-secrets/key.pem |
+  | test/tls-secrets/cert.pem |
