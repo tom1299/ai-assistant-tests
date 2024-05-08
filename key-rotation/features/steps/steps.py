@@ -44,8 +44,6 @@ def step_impl(context, file_or_script, file, name):
     os.environ['PATH'] = f"{folder}:{os.environ['PATH']}"
 
 
-
-
 @when(u'I call the (python script|script) "(?P<script>.*)" with the following arguments using the folder "(?P<folder>.*)" as the current directory')
 def step_when_call_python_script(context, script_or_python_script, script, folder):
     script_path = context.named_attributes[script]
@@ -62,7 +60,7 @@ def step_when_call_python_script(context, script_or_python_script, script, folde
             arg_value = context.named_attributes[arg_value]
         if arg_value and arg_name:
             command += f" {arg_name} {arg_value}"
-        if arg_value and not arg_name:
+        elif arg_value and not arg_name:
             command += f" {arg_value}"
         else:
             command += f" {arg_name}"
