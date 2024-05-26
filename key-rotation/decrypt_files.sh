@@ -10,7 +10,7 @@ fi
 cd "$1" || exit
 
 # Get the list of files to be decrypted from the python script key_rotation.py
-files_to_decrypt=$(key_rotation.py --folder "$1" --sops-config "$2" --age-key "$3" --list-files)
+files_to_decrypt=$(key_rotation.py list-files --folder "$1" --sops-config "$2" --age-key "$3")
 
 # Iterate over the files
 for file in $files_to_decrypt

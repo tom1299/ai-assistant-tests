@@ -28,19 +28,23 @@ def match_files_with_keys(sops_file, directory, public_key):
 
     return matched_files
 
-def update_sops_config(sops_file, old_public_key, new_public_key):
+def update_sops_config(sops_file, old_public_key, new_public_key=None):
     with open(sops_file, 'r', encoding='utf-8') as file:
         sops_config = yaml.safe_load(file)
 
     creation_rules = sops_config.get('creation_rules', [])
 
     for rule in creation_rules:
-        if old_public_key in rule['age']:
-            # Split the keys by comma, add the new key, and join them back together
-            keys = rule['age'].split(',')
+        keys = rule['age'].split(',')
+        if new_public_key:
+            # If the new_public_key is provided, add it to the 'age' field
             if new_public_key not in keys:
                 keys.append(new_public_key)
-            rule['age'] = ','.join(keys)
+        else:
+            # If the new_public_key is not provided, remove the old_public_key from the 'age' field
+            if old_public_key in keys:
+                keys.remove(old_public_key)
+        rule['age'] = ','.join(keys)
 
     with open(sops_file, 'w', encoding='utf-8') as file:
         yaml.dump(sops_config, file)
@@ -50,30 +54,29 @@ def main():
     parser = argparse.ArgumentParser(
         description='List files that need to be encrypted based on sops configuration.'
     )
-    parser.add_argument('--folder', required=False, help='The directory to search for files.')
-    parser.add_argument('--sops-config', default=DEFAULT_SOPS_CONFIG, help='The path to the sops configuration file.')
-    parser.add_argument('--age-key', required=False, help='The age public key the files returned should be matched encrypted with.')
-    parser.add_argument('--list-files', action='store_true', help='Flag to list files.')
-    parser.add_argument('--old-age-key', help='The old age public key to be replaced.')
-    parser.add_argument('--new-age-key', help='The new age public key to add.')
-    parser.add_argument('--add-new-key', action='store_true', help='Flag to add new key.')
+    subparsers = parser.add_subparsers(dest='command')
+
+    list_files_parser = subparsers.add_parser('list-files')
+    list_files_parser.add_argument('--folder', required=True, help='The directory to search for files.')
+    list_files_parser.add_argument('--sops-config', default=DEFAULT_SOPS_CONFIG, help='The path to the sops configuration file.')
+    list_files_parser.add_argument('--age-key', required=True, help='The age public key to list the files for.')
+
+    add_key_parser = subparsers.add_parser('add-key')
+    add_key_parser.add_argument('--sops-config', default=DEFAULT_SOPS_CONFIG, help='The path to the sops configuration file.')
+    add_key_parser.add_argument('--new-age-key', required=True, help='The age public key to add.')
+    add_key_parser.add_argument('--old-age-key', required=True, help='The age key that identifies the rules to add the new key to.')
 
     args = parser.parse_args()
 
-    if args.list_files and args.add_new_key:
-        parser.error("arguments --list-files and --add-new-key are mutually exclusive")
-    elif not args.list_files and not args.add_new_key:
-        parser.error("one of the arguments --list-files or --add-new-key is required")
-
-    if args.list_files:
+    if args.command == 'list-files':
         matched_files = match_files_with_keys(args.sops_config, args.folder, args.age_key)
 
         for files in matched_files.values():
             for filepath in files:
                 print(filepath)
 
-    if args.old_age_key and args.new_age_key and args.add_new_key:
-        update_sops_config(args.sops_config, args.old_age_key, args.new_age_key)
+    elif args.command == 'add-key':
+        update_sops_config(args.sops_config, args.new_age_key, args.old_age_key)
 
 if __name__ == "__main__":
     main()
